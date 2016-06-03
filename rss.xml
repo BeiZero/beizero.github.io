@@ -77,6 +77,7 @@ proguardOptions in Android ++= Seq(<span class="st">&quot;-dontwarn org.scaloid.
       })();
   </script>
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
 ]]></description>
     <pubDate>Wed, 09 Mar 2016 00:00:00 UT</pubDate>
     <guid>/posts/2016-03-09-helloworld-on-android-with-scala.html</guid>
