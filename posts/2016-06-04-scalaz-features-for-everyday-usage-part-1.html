@@ -1,31 +1,55 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Cascade Of Insights</title>
-    <link href="/feed.xml" rel="self" />
-    <link href="" />
-    <id>/feed.xml</id>
-    <author>
-        <name>Adam Bell</name>
-        <email>agbell at gmail.com</email>
-    </author>
-    <updated>2016-06-04T00:00:00Z</updated>
-    <entry>
-    <title>Scalaz для ежедневного использования. Часть 1: Классы типов и расширения Scala.</title>
-    <link href="/posts/2016-06-04-scalaz-features-for-everyday-usage-part-1.html" />
-    <id>/posts/2016-06-04-scalaz-features-for-everyday-usage-part-1.html</id>
-    <published>2016-06-04T00:00:00Z</published>
-    <updated>2016-06-04T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<div class="blog-post">
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>BeiZero Blog - Scalaz для ежедневного использования. Часть 1: Классы типов и расширения Scala.</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap-blog.css">
+    <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Fjalla+One">
+
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+	<nav class="blog-nav">
+          <a class="blog-nav-item" href="../">Home</a>
+          <a class="blog-nav-item" href="../about.html">About</a>
+          <a class="blog-nav-item" href="../contact.html">Contact</a>
+          <a class="blog-nav-item" href="../archive.html">Archive</a>
+	</nav>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="blog-header">
+	<h1 class="blog-title">BeiZero Blog</h1>
+	<p class="lead blog-description">
+	  The blog of Igor Fedorov
+	</p>
+      </div>
+
+      <div class="row">
+	<div class="col-sm-8 blog-main">
+	  <div class="blog-post">
   <h2 class="blog-post-title">
     Scalaz для ежедневного использования. Часть 1: Классы типов и расширения Scala.
   </h2>
   <p class="blog-post-meta">
-    <span class="date">2016-06-04</span> - <span class="tags"><a href="/tags/scala.html">scala</a>, <a href="/tags/scalaz%20%D0%B4%D0%BB%D1%8F%20%D0%B5%D0%B6%D0%B5%D0%B4%D0%BD%D0%B5%D0%B2%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.html">scalaz для ежедневного использования</a>, <a href="/tags/scalaz.html">scalaz</a>, <a href="/tags/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4.html">перевод</a></span>
+    <span class="date">2016-06-04</span> - <span class="tags"><a href="../tags/scala.html">scala</a>, <a href="../tags/scalaz%20%D0%B4%D0%BB%D1%8F%20%D0%B5%D0%B6%D0%B5%D0%B4%D0%BD%D0%B5%D0%B2%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.html">scalaz для ежедневного использования</a>, <a href="../tags/scalaz.html">scalaz</a>, <a href="../tags/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4.html">перевод</a></span>
   <p>Многие из вас наверно слышали о замечательной JavaScript книге “JavaScript the good parts”. В подобном ключе я бы хотел рассказать о некоторых вещах из Scalaz, которые действительно здорово использовать в повседневных проектах без необходимости вникать в то что происходит внутри Scalaz. В первой части мы рассмотрим несколько полезных классов типов. В будущих частях мы рассмотрим такие вещи как монадные трансформеры, свободные монады, Validation и т.д.</p>
 <!--more-->
 <p>Для этих примеров мы будем использовать Scala REPL. Для этого запустим <code>scala</code>, добавим библиотеку scalaz и импортируем нужные нам пакеты:</p>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">scala&gt; :require /Users/jos/.<span class="fu">ivy2</span>/cache/org.<span class="fu">scalaz</span>/scalaz-core_2<span class="fl">.11</span>/bundles/scalaz-core_2<span class="fl">.11-7.2.1</span>.<span class="fu">jar</span>
-Added &#39;/Users/jos/.<span class="fu">ivy2</span>/cache/org.<span class="fu">scalaz</span>/scalaz-core_2<span class="fl">.11</span>/bundles/scalaz-core_2<span class="fl">.11-7.2.1</span>.<span class="fu">jar</span>&#39; to classpath.
+Added '/Users/jos/.<span class="fu">ivy2</span>/cache/org.<span class="fu">scalaz</span>/scalaz-core_2<span class="fl">.11</span>/bundles/scalaz-core_2<span class="fl">.11-7.2.1</span>.<span class="fu">jar</span>' to classpath.
 
 scala&gt; <span class="kw">import</span> scalaz.<span class="fu">_</span>
 <span class="kw">import</span> scalaz.<span class="fu">_</span>
@@ -335,19 +359,19 @@ scala&gt; res66.<span class="fu">intersperse</span>(<span class="dv">1</span>)
 res68: List[Int] = List(<span class="dv">10</span>, <span class="dv">1</span>, <span class="dv">20</span>, <span class="dv">1</span>, <span class="dv">30</span>)
 
 # всевозможные перестановки списка
-scala&gt; List(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;).<span class="fu">powerset</span>
+scala&gt; List('a','b','c','d').<span class="fu">powerset</span>
 res71: List[List[Char]] = List(List(a, b, c, d), List(a, b, c), List(a, b, d), List(a, b), List(a, c, d), List(a, c), List(a, d), List(a), List(b, c, d), List(b, c), List(b, d), List(b), List(c, d), List(c), List(d), List())</code></pre></div>
 <h4 id="забавляемся-с-map">Забавляемся с Map</h4>
 <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"># безопасно изменить запись
 res77: scala.<span class="fu">collection</span>.<span class="fu">immutable</span>.<span class="fu">Map</span>[Char,Int] = Map(a -&gt; <span class="dv">10</span>, b -&gt; <span class="dv">20</span>)
-scala&gt; res77.<span class="fu">alter</span>(&#39;a&#39;)(f =&gt; f |+| <span class="fu">some</span>(<span class="dv">5</span>))
+scala&gt; res77.<span class="fu">alter</span>('a')(f =&gt; f |+| <span class="fu">some</span>(<span class="dv">5</span>))
 res78: Map[Char,Int] = Map(a -&gt; <span class="dv">15</span>, b -&gt; <span class="dv">20</span>)
 
-# пересечь два Map&#39;а и определить какое значение оставить при совпадении ключей
-scala&gt; <span class="kw">val</span> m1 =  Map(&#39;a&#39; -&gt; <span class="dv">100</span>, &#39;b&#39; -&gt; <span class="dv">200</span>, &#39;c&#39; -&gt; <span class="dv">300</span>)
+# пересечь два Map'а и определить какое значение оставить при совпадении ключей
+scala&gt; <span class="kw">val</span> m1 =  Map('a' -&gt; <span class="dv">100</span>, 'b' -&gt; <span class="dv">200</span>, 'c' -&gt; <span class="dv">300</span>)
 m1: scala.<span class="fu">collection</span>.<span class="fu">immutable</span>.<span class="fu">Map</span>[Char,Int] = Map(a -&gt; <span class="dv">100</span>, b -&gt; <span class="dv">200</span>, c -&gt; <span class="dv">300</span>)
 
-scala&gt; <span class="kw">val</span> m2 = Map(&#39;b&#39; -&gt; <span class="dv">2000</span>, &#39;c&#39; -&gt; <span class="dv">3000</span>, &#39;d&#39; -&gt; <span class="dv">4000</span>)
+scala&gt; <span class="kw">val</span> m2 = Map('b' -&gt; <span class="dv">2000</span>, 'c' -&gt; <span class="dv">3000</span>, 'd' -&gt; <span class="dv">4000</span>)
 m2: scala.<span class="fu">collection</span>.<span class="fu">immutable</span>.<span class="fu">Map</span>[Char,Int] = Map(b -&gt; <span class="dv">2000</span>, c -&gt; <span class="dv">3000</span>, d -&gt; <span class="dv">4000</span>)
 
 scala&gt; m1.<span class="fu">intersectWith</span>(m2)((m1v,m2v) =&gt; m2v)
@@ -383,7 +407,7 @@ res31: scalaz.<span class="fu">Validation</span>[NumberFormatException,Double] =
   <div id="socialButtons">
     <script type="text/javascript" src="//yastatic.net/es5-shims/0.0.2/es5-shims.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="//yastatic.net/share2/share.js" charset="utf-8"></script>
-    <div class="ya-share2" data-services="vkontakte,facebook,linkedin,gplus,twitter,blogger,reddit,evernote,lj,pocket" data-counter=""></div>
+    <div class="ya-share2" data-services="vkontakte,facebook,linkedin,gplus,twitter,blogger,reddit,evernote,lj,pocket" data-counter></div>
   </div>
 
   <div id="disqus_thread"></div>
@@ -399,82 +423,66 @@ res31: scalaz.<span class="fu">Validation</span>[NumberFormatException,Double] =
   </script>
   <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 </div>
-]]></summary>
-</entry>
-<entry>
-    <title>"Hello, World!" на Scala под Android</title>
-    <link href="/posts/2016-03-09-helloworld-on-android-with-scala.html" />
-    <id>/posts/2016-03-09-helloworld-on-android-with-scala.html</id>
-    <published>2016-03-09T00:00:00Z</published>
-    <updated>2016-03-09T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<div class="blog-post">
-  <h2 class="blog-post-title">
-    "Hello, World!" на Scala под Android
-  </h2>
-  <p class="blog-post-meta">
-    <span class="date">2016-03-09</span> - <span class="tags"><a href="/tags/scala.html">scala</a>, <a href="/tags/android.html">android</a>, <a href="/tags/scaloid.html">scaloid</a></span>
-  <p>В данной статье я постараюсь рассказать о том как начать разрабатывать приложения под Android используя Scala и SBT. Предполагается что у вас уже установлены Android SDK и SBT. <!--more--> Первое что нам нужно сделать это указать переменную окружения ANDROID_HOME. На OS X с Android SDK установленным через Homebrew для этого нужно выполнить команду:</p>
-<pre class="shellsession"><code>export ANDROID_HOME=/usr/local/Cellar/android-sdk/{sdk-version}</code></pre>
-<p>Не забудьте запустить Android SDK Manager и установить все нужные вам пакеты. Для сборки проекта мы будем использовать SBT(в данный момент у меня стоит версия 0.13.11) с плагином android-sdk-plugin. В директории будущего проекта создадим файл</p>
-<pre><code>/project/plugins.sbt</code></pre>
-<p>со следующим содержимым</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">addSbtPlugin</span>(<span class="st">&quot;com.hanhuy.sbt&quot;</span> % <span class="st">&quot;android-sdk-plugin&quot;</span> % <span class="st">&quot;1.5.19&quot;</span>)</code></pre></div>
-<p>запустим sbt из директории с проектом и выполним следующую команду</p>
-<pre><code>gen-android android-23 org.my_company project_name</code></pre>
-<p>первый аргумент здесь platform-target(23 соответствует версии Android 6.0 Marshmallow), второй package-name, третий project-name, а так же укажем в build.sbt версию Scala(нам понадобится версия 2.11.5 или новее) добавив строку</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">scalaVersion := <span class="st">&quot;2.11.8&quot;</span></code></pre></div>
-<p>После этого мы уже можем собрать наш проект и посмотреть что же получилось командой</p>
-<pre><code>sbt android:package</code></pre>
-<p>К сожалению иногда proguard не запускается, возможно из-за отсутствия “существенных” изменений в проекте, и когда вы набираете достаточное количество кода и зависимостей в своём проекте компилятор начинает иногда выдавать ошибку вида</p>
-<pre><code>trouble writing output: Too many method references: 94505; max is 65536.</code></pre>
-<p>один из вариантов решения проблемы это запускать сборку проекта предварительно его “очистив”</p>
-<pre><code>sbt clean &amp;&amp; sbt android:package</code></pre>
-<p>Самое время сделать наш код немного лучше. Откроем файл</p>
-<pre><code>/src/main/scala/org/my_company/sample.scala</code></pre>
-<p>тем кто уже знаком с разработкой под Android на Java данный код будет более чем знаком и в этом заключается основаная проблема — стандартная библиотека Android не предназначена для написания программ на Scala и код остаётся всё таким же громоздким, но к счастью есть замечательная библиотека scaloid! Добавим эту библиотеку в зависимости к нашему проекту и в исключения к proguard(странно, но без этого компиляция фейлится), для этого в build.sbt добавим следующие строчки</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">libraryDependencies += <span class="st">&quot;org.scaloid&quot;</span> %% <span class="st">&quot;scaloid&quot;</span> % <span class="st">&quot;4.2&quot;</span>
 
-proguardOptions in Android ++= Seq(<span class="st">&quot;-dontwarn org.scaloid.**&quot;</span>)</code></pre></div>
-<p>теперь перепишем наш файл sample.scala используя scaloid</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">package</span> org.<span class="fu">my_company</span>
+	</div>
 
-<span class="kw">import</span> org.<span class="fu">scaloid</span>.<span class="fu">common</span>.<span class="fu">_</span>
+	<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+	  <!-- <div class="sidebar-module sidebar-module-inset">
+	    <h4>Обо мне</h4>
+	    <p>Пока тут пусто</p>
+	  </div> -->
+    <div class="sidebar-module">
+      <h4>Циклы статей<h4>
+        <ol class="list-unstyled">
+          <li>
+            <a href="../tags/scalaz%20для%20ежедневного%20использования.html">Scalaz для ежедневного использования</a>
+          </li>
+        </ol>
+    </div>
+	  <div class="sidebar-module">
+	    <h4>Меня можно найти в</h4>
+	    <ol class="list-unstyled">
+        <li>
+		        <a href="https://vk.com/beizero">ВКонтакте</a>
+	      </li>
+	      <li>
+		        <a href="https://github.com/beizero/">GitHub</a>
+	      </li>
+	      <li>
+		        <a href="https://twitter.com/beizero">Twitter</a>
+	      </li>
+	      <li>
+		        <a href="https://www.facebook.com/beizero">Facebook</a>
+	      </li>
+        <li>
+          <a href="https://www.linkedin.com/in/beizero">LinkedIn</a>
+        </li>
+	    </ol>
+	  </div>
+	</div>
 
-<span class="kw">class</span> MainActivity <span class="kw">extends</span> SActivity {
+      </div>
 
-   onCreate {
+    </div>
 
-      contentView = <span class="kw">new</span> SVerticalLayout {
+    <footer class="blog-footer">
+      <p>
+	Site made with
+	<a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+    </footer>
+    <!-- google analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-         <span class="fu">SButton</span>(<span class="st">&quot;Say Hello&quot;</span>, <span class="fu">toast</span>(<span class="st">&quot;Hello, World!&quot;</span>))
+      ga('create', 'UA-9889209-5', 'auto');
+      ga('send', 'pageview');
 
-      }
+    </script>
+    <!-- google analytics -->
+  </body>
 
-   }
-
-}</code></pre></div>
-<p>На этом всё, можем собрать наш проект, запустить, нажать кнопку “Say Hello” и увидим заветные два слова.</p>
-
-  <div id="socialButtons">
-    <script type="text/javascript" src="//yastatic.net/es5-shims/0.0.2/es5-shims.min.js" charset="utf-8"></script>
-    <script type="text/javascript" src="//yastatic.net/share2/share.js" charset="utf-8"></script>
-    <div class="ya-share2" data-services="vkontakte,facebook,linkedin,gplus,twitter,blogger,reddit,evernote,lj,pocket" data-counter=""></div>
-  </div>
-
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-      /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-      var disqus_shortname = 'beizeroblog'; // required: replace example with your forum shortname
-      /* * * DON'T EDIT BELOW THIS LINE * * */
-      (function() {
-          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-      })();
-  </script>
-  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-]]></summary>
-</entry>
-
-</feed>
+</html>
