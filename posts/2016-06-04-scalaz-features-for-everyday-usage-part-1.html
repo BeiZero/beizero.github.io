@@ -367,7 +367,7 @@ res77: scala.<span class="fu">collection</span>.<span class="fu">immutable</span
 scala&gt; res77.<span class="fu">alter</span>('a')(f =&gt; f |+| <span class="fu">some</span>(<span class="dv">5</span>))
 res78: Map[Char,Int] = Map(a -&gt; <span class="dv">15</span>, b -&gt; <span class="dv">20</span>)
 
-# пересечь два Map'а и определить какое значение оставить при совпадении ключей
+# пересечь два Map'а и определить какое значение оставить для каждого из ключей
 scala&gt; <span class="kw">val</span> m1 =  Map('a' -&gt; <span class="dv">100</span>, 'b' -&gt; <span class="dv">200</span>, 'c' -&gt; <span class="dv">300</span>)
 m1: scala.<span class="fu">collection</span>.<span class="fu">immutable</span>.<span class="fu">Map</span>[Char,Int] = Map(a -&gt; <span class="dv">100</span>, b -&gt; <span class="dv">200</span>, c -&gt; <span class="dv">300</span>)
 
