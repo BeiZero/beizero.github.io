@@ -7,8 +7,257 @@
         <description><![CDATA[Adam Bell's blog]]></description>
         <atom:link href="/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Fri, 17 Jun 2016 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Wed, 22 Jun 2016 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Scalaz для ежедневного использования. Часть 3: Монада State, монада Writer и линзы.</title>
+    <link>/posts/2016-06-22-scalaz-features-for-everyday-usage-part-3.html</link>
+    <description><![CDATA[<div class="blog-post">
+  <h2 class="blog-post-title">
+    Scalaz для ежедневного использования. Часть 3: Монада State, монада Writer и линзы.
+  </h2>
+  <p class="blog-post-meta">
+    <span class="date">2016-06-22</span> - <span class="tags"><a href="/tags/scala.html">scala</a>, <a href="/tags/scalaz%20%D0%B4%D0%BB%D1%8F%20%D0%B5%D0%B6%D0%B5%D0%B4%D0%BD%D0%B5%D0%B2%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F.html">scalaz для ежедневного использования</a>, <a href="/tags/scalaz.html">scalaz</a>, <a href="/tags/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4.html">перевод</a></span>
+  <p>В этой статье мы посмотрим на пару монад и паттернов из Scalaz. Напомню, что мы будем смотреть на них с практической точки зрения и избегать внутренних деталей Scalaz. В данной статье мы рассмотрим:</p>
+<!--more-->
+<ul>
+<li>Монада Writer: Ведёт своего рода логи во время выполнения набора операций.</li>
+<li>Монада State: Предоставляет простой способ пробрасывания состояния между функциями.</li>
+<li>Линзы: Предоставляет простой доступ к глубоко вложенным атрибутам и делает создание копий иерархии case class’ов более удобным.</li>
+</ul>
+<h3 id="монада-writer">Монада Writer</h3>
+<p>В своей основе каждый Writer имеет журнал и возвращаемое значение. Например, вы можете просто написать чистый код, а потом уже решить что вы хотите делать с логами(проверить их в тесте, вывести в консоль или в файл). Таким образом, мы можем использовать Writer для того, чтобы следить за операциями которые мы выполняем.</p>
+<p><em>Примечание от переводчика: монаду Writer можно использовать не только для логирования, но я буду придерживаться текста оригинальной статьи, а более подробно расскажу об этом в другой статье.</em></p>
+<p>Итак, давайте посмотрим на следующий код для того, чтобы понять как это работает:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> scalaz.<span class="fu">_</span>
+<span class="kw">import</span> Scalaz.<span class="fu">_</span>
+
+<span class="kw">object</span> WriterSample <span class="kw">extends</span> App {
+
+  <span class="co">// левая часть должна быть моноидом. Другими словами это нечто поддерживающее</span>
+  <span class="co">// &quot;конкатенацию&quot; и имеющее нейтральный элемент, например, String, List, Set и т.д.</span>
+  <span class="kw">type</span> Result[T] = Writer[List[String], T]
+
+  <span class="kw">def</span> <span class="fu">doSomeAction</span>() : Result[Int] = {
+    <span class="co">// провести вычисления для получения результата</span>
+    <span class="kw">val</span> res = <span class="dv">10</span>
+    <span class="co">// создать writer используя set</span>
+    res.<span class="fu">set</span>(List(s<span class="st">&quot;Doing some action and returning res&quot;</span>))
+  }
+
+  <span class="kw">def</span> <span class="fu">doingAnotherAction</span>(b: Int) : Result[Int] = {
+    <span class="co">// провести вычисления для получения результата</span>
+    <span class="kw">val</span> res = b * <span class="dv">2</span>
+    <span class="co">// создать writer используя set</span>
+    res.<span class="fu">set</span>(List(s<span class="st">&quot;Doing another action and multiplying $b with 2&quot;</span>))
+  }
+
+  <span class="kw">def</span> <span class="fu">andTheFinalAction</span>(b: Int) : Result[String] = {
+    <span class="kw">val</span> res = s<span class="st">&quot;bb:$b:bb&quot;</span>
+
+    <span class="co">// создать writer используя set</span>
+    res.<span class="fu">set</span>(List(s<span class="st">&quot;Final action is setting $b to a string&quot;</span>))
+  }
+
+  <span class="co">// возвращает кортеж: (List, Int)</span>
+  <span class="fu">println</span>(<span class="fu">doSomeAction</span>().<span class="fu">run</span>)
+
+  <span class="kw">val</span> combined = <span class="kw">for</span> {
+    a &lt;- <span class="fu">doSomeAction</span>()
+    b &lt;- <span class="fu">doingAnotherAction</span>(a)
+    c &lt;- <span class="fu">andTheFinalAction</span>(b)
+  } <span class="kw">yield</span> c
+
+  <span class="co">// возвращает кортеж: (List, String)</span>
+  <span class="fu">println</span>(combined.<span class="fu">run</span>)
+}</code></pre></div>
+<p>В данном примере у нас есть три операции которые делают что-то. В данном случае, они на самом деле почти ничего не делают, но нам это и не важно. Основая идея в том, что мы вместо результата возвращаем Writer(заметим, что мы так же могли бы создать Writer внутри for-генератора) с помощью функции <code>set</code>. Когда мы вызываем <code>run</code> у Writer, мы получаем не только результат, но и агрегированные значения которые он собрал. Поэтому, когда мы делаем:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">type</span> Result[T] = Writer[List[String], T]
+
+<span class="kw">def</span> <span class="fu">doSomeAction</span>() : Result[Int] = {
+  <span class="co">// провести вычисления для получения результата</span>
+  <span class="kw">val</span> res = <span class="dv">10</span>
+  <span class="co">// создать writer используя set</span>
+  res.<span class="fu">set</span>(List(s<span class="st">&quot;Doing some action and returning res&quot;</span>))
+}
+
+<span class="fu">println</span>(<span class="fu">doSomeAction</span>().<span class="fu">run</span>)</code></pre></div>
+<p>Результат будет выглядеть как <code>(List(Doing some action and returning res),10)</code>. Не то чтобы это очень захватывающе, но мы можем делать более интересные вещи используя writer в for-генераторе.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> combined = <span class="kw">for</span> {
+  a &lt;- <span class="fu">doSomeAction</span>()
+  b &lt;- <span class="fu">doingAnotherAction</span>(a)
+  c &lt;- <span class="fu">andTheFinalAction</span>(b)
+} <span class="kw">yield</span> c
+
+<span class="co">// возвращаем кортеж: (List, String)</span>
+<span class="fu">println</span>(combined.<span class="fu">run</span>)</code></pre></div>
+<p>Данный код выведет в консоль:</p>
+<pre><code>(List(Doing some action and returning res,
+     Doing another action and multiplying 10 with 2,
+     Final action is setting 20 to a string)
+ ,bb:20:bb)</code></pre>
+<p>Как вы можете видеть, мы собрали все логи в <code>List[String]</code> и полученный кортеж так же содержит результат вычислений.</p>
+<p>Если вы не хотите добавлять создание writer’ов в ваши функции вы можете создать их в for-генераторе:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> combined2 = <span class="kw">for</span> {
+   a &lt;- <span class="fu">doSomeAction1</span>()     <span class="fu">set</span>(<span class="st">&quot; Executing Action 1 &quot;</span>)   <span class="co">// String тоже моноид</span>
+   b &lt;- <span class="fu">doSomeAction2</span>(a)    <span class="fu">set</span>(<span class="st">&quot; Executing Action 2 &quot;</span>)
+   c &lt;- <span class="fu">doSomeAction2</span>(b)    <span class="fu">set</span>(<span class="st">&quot; Executing Action 3 &quot;</span>)
+<span class="co">//  c &lt;- WriterT.writer(&quot;bla&quot;, doSomeAction2(b))   // альтернативный вариант создания</span>
+ } <span class="kw">yield</span> c
+
+ <span class="fu">println</span>(combined2.<span class="fu">run</span>)</code></pre></div>
+<p>В результате мы получим:</p>
+<pre><code>( Executing Action 1  Executing Action 2  Executing Action 3 ,5)</code></pre>
+<h3 id="монада-state">Монада State</h3>
+<p>Другая интересная монада это монада State, она позволяет работать с состоянием которое должно быть передано через несколько функций. С помощью неё вы можете отслеживать результаты или передавать некоторый контекст между функциями. В предыдущей статье вы уже видели как можно передать некоторый контест в функцию с помощью монады Reader, однако, этот контест нельзя было изменять. Монада State предоставляет удобный способ безопасной и чистой передачи изменяемого контекста.</p>
+<p>Давайте посмотрим на следующий пример:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> <span class="fu">LeftOver</span>(size: Int)
+
+<span class="co">/** State представляет из себя функцию `S =&gt; (S, A)`. */</span>
+<span class="kw">type</span> Result[A] = State[LeftOver, A]
+
+<span class="kw">def</span> <span class="fu">getFromState</span>(a: Int): Result[Int] = {
+  <span class="co">// делаем любые виды вычислений</span>
+  State[LeftOver, Int] {
+    <span class="co">// просто возвращаем количество денег которое мы взяли</span>
+    <span class="co">// и новый State</span>
+    <span class="kw">case</span> x =&gt; (<span class="fu">LeftOver</span>(x.<span class="fu">size</span> - a), a)
+  }
+}
+
+<span class="kw">def</span> <span class="fu">addToState</span>(a: Int): Result[Int] = {
+  <span class="co">// делаем любые виды вычислений</span>
+  State[LeftOver, Int] {
+    <span class="co">// просто возвращаем сумму которую мы добавили</span>
+    <span class="co">// и новый State</span>
+    <span class="kw">case</span> x =&gt; (<span class="fu">LeftOver</span>(x.<span class="fu">size</span> + a), a)
+  }
+}
+
+<span class="kw">val</span> res: Result[Int] = <span class="kw">for</span> {
+  _ &lt;-  <span class="fu">addToState</span>(<span class="dv">20</span>)
+  _ &lt;- <span class="fu">getFromState</span>(<span class="dv">5</span>)
+  _ &lt;- <span class="fu">getFromState</span>(<span class="dv">5</span>)
+  a &lt;- <span class="fu">getFromState</span>(<span class="dv">5</span>)
+  currentState &lt;- get[LeftOver]                <span class="co">// получаем состояние в данный момент</span>
+  manualState &lt;- put[LeftOver](<span class="fu">LeftOver</span>(<span class="dv">9000</span>)) <span class="co">// задаём новое состояние</span>
+  b &lt;- <span class="fu">getFromState</span>(<span class="dv">10</span>) <span class="co">// и продолжаем работать с новым State</span>
+} <span class="kw">yield</span> {
+  <span class="fu">println</span>(s<span class="st">&quot;currenState: $currentState&quot;</span>)
+  a
+}
+
+<span class="co">// мы начинаем с состояния 10, и после всех операций мы остаёмся с 5</span>
+<span class="co">// без необходимости пробрасывать состояние с помощью implicits</span>
+<span class="co">// или чего-нибудь ещё</span>
+<span class="fu">println</span>(<span class="fu">res</span>(<span class="fu">LeftOver</span>(<span class="dv">10</span>)))</code></pre></div>
+<p>Как вы видите в каждой функции мы получаем текущий контекст, проделываем над ним какие-нибудь операции и возвращаем кортеж содержащий новый State и значение функции. Таким образом, каждая функция имеет доступ к состоянию, может вернуть новое состояние и возвращает его вместе со значением функции как кортеж. Когда мы запускаем данный код мы получаем:</p>
+<pre><code>currenState: LeftOver(15)
+(LeftOver(8990),5)</code></pre>
+<p>В итоге, каждая функция делает что-то с состоянием. С помощью функции <code>get</code> мы можем получить значение в текущий момент времени и в данном примере мы это печатаем в консоль. Кроме того, мы можем непосредственно задать состояние с помощью функции <code>set</code>.</p>
+<p>Как вы можете видеть это очень хороший и простой для использования паттерн, позволяющий пробрасывать состояние между функциями.</p>
+<h3 id="линзы">Линзы</h3>
+<p>Давайте пока оставим монады и посмотрим на линзы. С помощью линз можно просто(ну проще чем просто копировать case class’ы руками) изменять значения в иерархии вложенных объектов. Линзы позволяют сделать очень многое, но в этой статье мы остановимся на нескольких основных вещах. Давайте посмотрим на код:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> scalaz.<span class="fu">_</span>
+<span class="kw">import</span> Scalaz.<span class="fu">_</span>
+
+<span class="kw">object</span> LensesSample <span class="kw">extends</span> App {
+
+  <span class="co">// паршивая case модель с отсутствием креатива</span>
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">Account</span>(userName: String, person: Person)
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">Person</span>(firstName: String, lastName: String, address: List[Address], gender: Gender)
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">Gender</span>(gender: String)
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">Address</span>(street: String, number: Int, postalCode: PostalCode)
+  <span class="kw">case</span> <span class="kw">class</span> <span class="fu">PostalCode</span>(numberPart: Int, textPart: String)
+
+  <span class="kw">val</span> acc1 = <span class="fu">Account</span>(<span class="st">&quot;user123&quot;</span>, <span class="fu">Person</span>(<span class="st">&quot;Jos&quot;</span>, <span class="st">&quot;Dirksen&quot;</span>,
+                List(<span class="fu">Address</span>(<span class="st">&quot;Street&quot;</span>, <span class="dv">1</span>, <span class="fu">PostalCode</span>(<span class="dv">12</span>,<span class="st">&quot;ABC&quot;</span>)),
+                     <span class="fu">Address</span>(<span class="st">&quot;Another&quot;</span>, <span class="dv">2</span>, <span class="fu">PostalCode</span>(<span class="dv">21</span>,<span class="st">&quot;CDE&quot;</span>))),
+                <span class="fu">Gender</span>(<span class="st">&quot;male&quot;</span>)))
+
+
+  <span class="kw">val</span> acc2 = <span class="fu">Account</span>(<span class="st">&quot;user345&quot;</span>, <span class="fu">Person</span>(<span class="st">&quot;Brigitte&quot;</span>, <span class="st">&quot;Rampelt&quot;</span>,
+                List(<span class="fu">Address</span>(<span class="st">&quot;Blaat&quot;</span>, <span class="dv">31</span>, <span class="fu">PostalCode</span>(<span class="dv">67</span>,<span class="st">&quot;DEF&quot;</span>)),
+                     <span class="fu">Address</span>(<span class="st">&quot;Foo&quot;</span>, <span class="dv">12</span>, <span class="fu">PostalCode</span>(<span class="dv">45</span>,<span class="st">&quot;GHI&quot;</span>))),
+                <span class="fu">Gender</span>(<span class="st">&quot;female&quot;</span>)))
+
+
+  <span class="co">// Если теперь вы хотите изменить что-то, скажем, изменить пол (просто потому, что можем) нам нужно начать копировать всё подряд  </span>
+  <span class="kw">val</span> acc1Copy = acc1.<span class="fu">copy</span>(
+    person = acc1.<span class="fu">person</span>.<span class="fu">copy</span>(
+      gender = <span class="fu">Gender</span>(<span class="st">&quot;something&quot;</span>)
+    )
+  )</code></pre></div>
+<p>В данном примере мы определили несколько case class’ов и хотим изменить одно значение. Для case class’ов это означает, что мы должны скопировать всю иерархию объектов для изменения вложенных значений. Для простых случаев это выглядит не сложно, но используя такой подход код довольно быстро становится громоздким. С линзами мы можем получить механизм для того чтобы сделать это в более композитном стиле:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> genderLens = Lens.<span class="fu">lensu</span>[Account, Gender](
+   (account, gender) =&gt; account.<span class="fu">copy</span>(person = account.<span class="fu">person</span>.<span class="fu">copy</span>(gender = gender)),
+   (account) =&gt; account.<span class="fu">person</span>.<span class="fu">gender</span>
+ )
+
+ <span class="co">// и используя линзы мы можем непосредственно изменить пол</span>
+ <span class="kw">val</span> updated = genderLens.<span class="fu">set</span>(acc1, <span class="fu">Gender</span>(<span class="st">&quot;Blaat&quot;</span>))
+ <span class="fu">println</span>(updated)
+
+#Вывод: <span class="fu">Account</span>(user123,<span class="fu">Person</span>(Jos,Dirksen,List(<span class="fu">Address</span>(Street,<span class="dv">1</span>,<span class="fu">PostalCode</span>(<span class="dv">12</span>,ABC)),
+         <span class="fu">Address</span>(Another,<span class="dv">2</span>,<span class="fu">PostalCode</span>(<span class="dv">21</span>,CDE))),<span class="fu">Gender</span>(Blaat)))</code></pre></div>
+<p>Таким образом мы определили линзу, которая может изменить конкретное значение в иерархии. С помощью этой линзы мы можем напрямую обратиться и установить новое значение во вложенной иерархии. Мы так же можем создать линзу которая изменяет значение и возвращает модифицированный объект с помощью оператора <code>=&gt;=</code>.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// мы можем использовать базовую линзу для создания модифицирующей линзы</span>
+<span class="kw">val</span> toBlaBlaLens = genderLens =&gt;= (_ =&gt; <span class="fu">Gender</span>(<span class="st">&quot;blabla&quot;</span>))
+<span class="fu">println</span>(<span class="fu">toBlaBlaLens</span>(acc1))
+#Вывод:  <span class="fu">Account</span>(user123,<span class="fu">Person</span>(Jos,Dirksen,List(<span class="fu">Address</span>(Street,<span class="dv">1</span>,<span class="fu">PostalCode</span>(<span class="dv">12</span>,ABC)),
+          <span class="fu">Address</span>(Another,<span class="dv">2</span>,<span class="fu">PostalCode</span>(<span class="dv">21</span>,CDE))),<span class="fu">Gender</span>(blabla)))
+
+<span class="kw">val</span> existingGender = genderLens.<span class="fu">get</span>(acc1)
+<span class="fu">println</span>(existingGender)
+#Вывод: <span class="fu">Gender</span>(male)</code></pre></div>
+<p>И мы можем использовать операторы <code>&gt;=&gt;</code> и <code>&lt;=&lt;</code> для того, чтобы скомбинировать линзы. Например, в следующем примере мы создаём отдельные линзы, которые потом комбинируются и выполняются:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// для начала создадим линзу возвращающую &quot;человека&quot;</span>
+<span class="kw">val</span> personLens = Lens.<span class="fu">lensu</span>[Account, Person](
+  (account, person) =&gt; account.<span class="fu">copy</span>(person = person),
+  (account) =&gt; account.<span class="fu">person</span>
+)
+
+<span class="co">// получаем фамилию</span>
+<span class="kw">val</span> lastNameLens = Lens.<span class="fu">lensu</span>[Person, String](
+  (person, lastName) =&gt; person.<span class="fu">copy</span>(lastName = lastName),
+  (person) =&gt; person.<span class="fu">lastName</span>
+)
+
+
+<span class="co">// получаем человека, потом берём фамилию и задаём новую фамилию</span>
+<span class="kw">val</span> combined = (personLens &gt;=&gt; lastNameLens) =&gt;= (_ =&gt; <span class="st">&quot;New LastName&quot;</span>)
+
+<span class="fu">println</span>(<span class="fu">combined</span>(acc1))
+
+#Вывод: <span class="fu">Account</span>(user123,<span class="fu">Person</span>(Jos,New LastName,List(<span class="fu">Address</span>(Street,<span class="dv">1</span>,<span class="fu">PostalCode</span>(<span class="dv">12</span>,ABC)),
+          <span class="fu">Address</span>(Another,<span class="dv">2</span>,<span class="fu">PostalCode</span>(<span class="dv">21</span>,CDE))),<span class="fu">Gender</span>(male)))</code></pre></div>
+<h3 id="заключение">Заключение</h3>
+<p>Есть ещё две темы о которых я хочу написать, это Validations и свободные монады. В следующей статье я покажу как можно использовать ValidationNEL. Однако, я думаю, что свободные монады не попадают в категорию вещей для ежедневного использовая, поэтому, возможно, я напишу о них в других статьях в будущем.</p>
+
+  <div id="socialButtons">
+    <script type="text/javascript" src="//yastatic.net/es5-shims/0.0.2/es5-shims.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="//yastatic.net/share2/share.js" charset="utf-8"></script>
+    <div class="ya-share2" data-services="vkontakte,facebook,linkedin,gplus,twitter,blogger,reddit,evernote,lj,pocket" data-counter=""></div>
+  </div>
+
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+      /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+      var disqus_shortname = 'beizeroblog'; // required: replace example with your forum shortname
+      /* * * DON'T EDIT BELOW THIS LINE * * */
+      (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+]]></description>
+    <pubDate>Wed, 22 Jun 2016 00:00:00 UT</pubDate>
+    <guid>/posts/2016-06-22-scalaz-features-for-everyday-usage-part-3.html</guid>
+    <dc:creator>Adam Bell</dc:creator>
+</item>
+<item>
     <title>Scalaz для ежедневного использования. Часть 2: Монадные трансформеры и монада Reader.</title>
     <link>/posts/2016-06-17-scalaz-features-for-everyday-usage-part-2.html</link>
     <description><![CDATA[<div class="blog-post">
