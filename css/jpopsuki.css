@@ -1,0 +1,421 @@
+/* JPS Responsive CustomRed (mobile + desktop)
+   Based on the provided stylesheet, cleaned, consolidated, and made responsive.
+   Key changes:
+   - Fluid typography via clamp
+   - Flexible container with gutters
+   - Sidebar stacks under main on narrow screens
+   - Tables and code blocks scroll on small screens
+   - Touch-friendly controls and reduced chrome on mobile
+   - Consistent colors/variables preserved
+*/
+
+/* WebKit scrollbar (hidden on very small screens) */
+::-webkit-scrollbar-track { background-color: var(--background-color)!important; }
+::-webkit-scrollbar-thumb { -webkit-border-radius: 0!important; border-radius: 0!important; background-color: var(--webkit-color)!important; }
+::-webkit-scrollbar { width: 8px!important; }
+
+/* Variables */
+:root {
+  /* Colors */
+  --background-color: #1e2426;
+  --box-bg-color: #1e2426;
+  --table-background-color: #1e2426;
+  --header-color: linear-gradient(45deg, #232526, #414345, #842d26);
+  --menu-gradient: linear-gradient(45deg, #232526, #414345, #842d26);
+  --accent-color: #842d26;
+  --webkit-color: #842d26;
+  --new-torrent: #22282b;
+  --torrent-child: #262d30;
+  --box-shadow: rgba(0,0,0,.25);
+  --sec-bg-color: #f5f5f5;
+  --input-border-color: rgba(0,0,0,0.15);
+  --input-select-border-color: rgba(0,0,0,0.15);
+  --input-background-color: #1e2426;
+  --input-hover-bg-color: #f5f5f5;
+  --unread-color: #6d241e;
+  --unread-soft-color: #842d26;
+
+  /* Font sizes */
+  --fs-header-xxl: 30px;
+  --fs-header-xl: 26px;
+  --fs-header-l: 24px;
+  --fs-header: 20px;
+  --fs-header-s: 18px;
+  --fs-default: 16px;
+  --fs-paragraph: 16px;
+  --fs-paragraph-s: 14px;
+  --fs-paragraph-xs: 12px;
+  --fs-label: 16px;
+  --fs-label-s: 14px;
+  --fs-label-xs: 12px;
+  --fs-button: 14px;
+  --fs-button-s: 12px;
+
+  /* Elements */
+  --top-nav-height: 55px;
+  --box-floating-shadow: 0 5px 7px rgba(0, 0, 0, 0.07);
+  --box-onflat-shadow: 0 1px 2px rgba(0,0,0,.1);
+  --button-floating-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+  --menu-width: 180px;
+  --rounded-corners: 8px;
+  --soft-corners: 4px;
+  --sharp-corners: 2px;
+  --main-content-width: 95%;
+}
+
+/* Base reset and typography */
+* { box-sizing: inherit; }
+html { box-sizing: border-box; }
+a:active, a:focus, button:active, button:focus, input:active, input:focus, select:active, select:focus, textarea:active, textarea:focus { outline: 0; }
+
+body, button, h1, h2, h3, h4, h5, h6, input, select, textarea {
+  font-family: 'Open Sans', Helvetica, Arial, Tahoma, "Microsoft Yahei", sans-serif;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3aCWcynf_cDxXwCLxiixG1c.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url(https://fonts.gstatic.com/s/opensans/v13/MTP_ySUJH_bn48VBG8sNSonF5uFdDttMLvmWuJdhhgs.ttf) format('truetype');
+}
+
+body {
+  margin: 0;
+  color: #c6c9c9;
+  background-color: var(--background-color);
+  line-height: 1.6;
+  font-size: clamp(14px, 1.1vw + 10px, 16px);
+}
+
+h1,h2,h3,h4,h5,h6 {
+  margin: 8px 0;
+  max-width: 100%;
+  font-weight: 600;
+  color: #f0f0f0;
+  line-height: 1.25;
+}
+h1,h2 { font-size: clamp(20px, 2.1vw, 23px); }
+h3,h4 { font-size: clamp(18px, 1.8vw, 20px); }
+h5,h6 { font-size: clamp(16px, 1.5vw, 18px); }
+h1 a,h2 a,h3 a,h5 a,h6 a { color: var(--accent-color); }
+h4 a { color: var(--accent-color); text-shadow: 0 0 4px #414345; }
+
+a { color: #f0f0f0; text-decoration: none; }
+a:hover { color: var(--accent-color); }
+b,strong { font-weight: 700; }
+
+ol,ul { margin: 12px; padding-left: 16px; }
+ol.nobullet,ul.nobullet { list-style-type: none; }
+li { margin-bottom: 4px; }
+li:last-child { margin-bottom: 0; }
+
+blockquote {
+  margin: 12px;
+  padding: 12px;
+  border: 1px dashed rgba(255,255,255,.25);
+  color: var(--accent-color)!important;
+  background-color: var(--background-color);
+}
+
+::selection { color: #fff; background-color: var(--accent-color); }
+::-moz-selection { color: #fff; background-color: var(--accent-color); }
+
+.nobr { white-space: nowrap; }
+
+/* Layout container */
+#wrapper {
+  margin: 0 auto;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 12px;
+}
+
+/* Columns */
+.main_column {
+  width: 100%;
+  max-width: calc(100% - 280px);
+  float: left;
+}
+.sidebar {
+  width: 260px;
+  float: right;
+}
+
+/* Boxes and sections */
+.box, .box2 {
+  margin: 0 0 12px 0;
+  background-color: var(--table-background-color);
+  border-radius: var(--soft-corners);
+  box-shadow: var(--box-onflat-shadow);
+  overflow: hidden;
+}
+.body, .head, .pad { padding: 12px; }
+.head {
+  background: var(--header-color);
+  color: #f0f0f0;
+  line-height: 18px;
+}
+
+/* Forms and inputs */
+form { background-color: var(--table-background-color); }
+form table td.label {
+  width: 180px;
+  text-align: right;
+  color: #959a9e;
+  font-weight: 600;
+}
+
+button, input, select, textarea { font-size: 14px; }
+button, input[type=button], input[type=submit] {
+  padding: 8px 14px;
+  height: auto;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  color: var(--background-color);
+  background: linear-gradient(#f0f0f0, #b8b8b8);
+  cursor: pointer;
+  box-shadow: var(--button-floating-shadow);
+}
+button:active, input[type=button]:active, input[type=submit]:active {
+  background: linear-gradient(#b8b8b8, #f0f0f0);
+}
+
+input[type=email],
+input[type=password],
+input[type=search],
+input[type=text],
+input[type=url],
+textarea,
+select {
+  border-radius: 6px;
+  box-sizing: border-box;
+  line-height: 18px;
+  margin: 6px 0;
+  width: 100%;
+  max-width: 100%;
+  transition: all .15s linear;
+  background: #2a2d33;
+  border: 1px solid #101113;
+  box-shadow: inset 1px 2px 4px rgba(0,0,0,.3);
+  color: #bbb;
+  padding: 8px 10px;
+}
+input[type=search] { -webkit-appearance: textfield; }
+[type=search] { -webkit-appearance: textfield; outline-offset: -2px; }
+textarea { min-height: 120px; padding-top: 8px; }
+
+/* Dropdown options */
+select option {
+  background: #2a2d33;
+  color: #bbb;
+}
+
+/* Tables */
+table, table .rowa:nth-child(even), table .rowb:nth-child(even) { background-color: var(--table-background-color); }
+table {
+  margin: 8px 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+table .rowa, table .rowb { border-top: 2px solid var(--table-background-color); }
+table .rowa:nth-child(odd), table .rowb:nth-child(odd) { background-color: #262d30; }
+table ul.options_list { margin: 0; padding: 0; }
+td { padding: 6px 8px; text-align: left; }
+td:first-child { padding-left: 12px; }
+td:last-child { padding-right: 12px; }
+
+.colhead, .colhead_dark {
+  background: var(--header-color);
+  color: #fff;
+  line-height: 18px;
+}
+.colhead td, .colhead_dark td { padding-top: 12px; padding-bottom: 12px; }
+.colhead td.sign, .colhead_dark td.sign { text-align: center!important; }
+.colhead td.sign .tooltip, .colhead_dark td.sign .tooltip { display: inline; max-height: 13px; max-width: 13px; }
+
+/* Responsive tables wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive > table { min-width: 640px; }
+
+/* Images */
+img { max-width: 100%; height: auto; }
+.body img, .box_request_desc:not(.head) img, .comment:not(.head) img, .news_post:not(.head) img, .profileinfo:not(.head) img, .wiki_article img, form table td.label { vertical-align: middle; }
+
+/* Forum */
+.forum_post.forum_unread { border-top: 2px solid var(--accent-color); }
+.forum_post .avatar { width: 150px; padding: 0; }
+.forum_post .avatar img {
+  display: block;
+  height: auto;
+  width: auto;
+  max-height: 400px!important;
+  min-width: 200px;
+  max-width: 200px!important;
+}
+@media screen and (-ms-high-contrast:active), (-ms-high-contrast:none) {
+  .forum_post .body img { max-width: 720px; }
+}
+.forum_index h4, .forum_list h4 { color: #00cc66; text-shadow: 0 0 3px #bac3db; }
+
+/* Utility */
+.clear:after { content: ''; display: block; height: 0; visibility: hidden; clear: both; }
+.profileinfo:before {content: ''; display: table; clear: both; }
+.min_padding { margin: 0; padding: 0; }
+.center { text-align: center; }
+#content > .thin, .box, .box2, .main_column, .sidebar { overflow: hidden; }
+
+/* Tooltips Autocomplete */
+.autocomplete-suggestions {
+  margin-top: 4px; border: none; color: var(--table-background-color); background-color: #f0f0f0;
+}
+.autocomplete-suggestions .autocomplete-suggestion { line-height: 24px; padding: 0 8px; }
+.autocomplete-suggestions .autocomplete-suggestion.autocomplete-selected { background-color: var(--accent-color); color: #fff; }
+.autocomplete-suggestions .autocomplete-suggestion strong { color: #12a1e3; }
+
+/* Status colors */
+strong.important_text { color: #e85050; }
+strong.important_text_alt { color: var(--accent-color); }
+.error, .invalid, .new, .r00, .r01, .r02, .r03, .warning { color: #e85050; }
+.r04, .r05, .r06, .r07, .r08, .r09 { color: #e3ba65; }
+.r10, .r20, .r50, .r99, .small_upvote, .small_upvoted, .vote_album_up, .vote_artist_up, .vote_tag_up { color: var(--accent-color); }
+.small_downvote, .vote_album_down, .vote_artist_down, .vote_tag_down { color: #e85050; }
+
+/* Torrent list indicators */
+.torrent_table tr.group_redline > td:first-of-type,
+.torrent_table tr.torrent_redline > td:first-of-type,
+tr.unreadpm > td:first-of-type {
+  box-shadow: inset 5px 0 var(--unread-color);
+}
+.torrent_table tr.group_torrent_redline > td:first-of-type {
+  box-shadow: inset 5px 0 var(--unread-soft-color);
+}
+
+/* Fun bits preserved */
+a[href="user.php?id=193864"]::after {
+  content: url(https://i.imgur.com/lG2Bd5v.gif);
+  vertical-align: -30%;
+  position: relative;
+  right: -2.5px;
+}
+
+/* Header/menu hooks (kept min for compatibility) */
+#menu > ul a { white-space: nowrap; }
+
+/* Responsive media queries */
+
+/* Large tablets / small desktops */
+@media (max-width: 1200px) {
+  .main_column { max-width: calc(100% - 260px); }
+  .sidebar { width: 240px; }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+  #wrapper { padding: 0 10px; }
+  .main_column, .sidebar {
+    float: none;
+    width: 100%;
+    max-width: 100%;
+  }
+  .sidebar { margin-top: 12px; }
+  .forum_post .avatar {
+    width: 120px;
+  }
+  .forum_post .avatar img {
+    min-width: 120px;
+    max-width: 120px!important;
+    max-height: 300px!important;
+  }
+  .head, .body, .pad { padding: 10px; }
+  td { padding: 6px; }
+}
+
+/* Large phones / small tablets */
+@media (max-width: 768px) {
+  body { font-size: clamp(14px, 2.8vw + 8px, 16px); }
+
+  /* Tables become scrollable */
+  .box table, .box2 table, .torrent_table, table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  form table td.label {
+    width: auto;
+    text-align: left;
+    display: block;
+    margin-top: 8px;
+  }
+  form table td:not(.label) {
+    display: block;
+    width: 100%;
+  }
+
+  button, input[type=button], input[type=submit] {
+    width: 100%;
+  }
+
+  /* Compact paddings */
+  .head, .body, .pad { padding: 10px; }
+  ol,ul { margin: 10px; padding-left: 16px; }
+}
+
+/* Phones */
+@media (max-width: 600px) {
+  html, body { overflow-x: hidden; }
+  #wrapper { padding: 0 8px; }
+
+  h1,h2 { font-size: clamp(18px, 5.2vw, 22px); }
+  h3,h4 { font-size: clamp(16px, 4.5vw, 20px); }
+
+  /* Hide wide-only bits if needed */
+  .nobr { white-space: normal; }
+
+  /* Inputs and touch targets */
+  input, select, textarea { padding: 10px 12px; }
+  label { display: block; margin: 6px 0 2px; }
+
+  /* Scrollbar slimmer or hidden */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
+  .forum_post .avatar { width: 90px; }
+  .forum_post .avatar img {
+    min-width: 90px;
+    max-width: 90px!important;
+    max-height: 220px!important;
+  }
+}
+
+/* Tiny phones */
+@media (max-width: 420px) {
+  .head, .body, .pad { padding: 8px; }
+  td { padding: 6px 6px; }
+  blockquote { margin: 8px; padding: 8px; }
+}
+
+/* High-density pointers */
+@media (pointer: coarse) {
+  button, input[type=button], input[type=submit] { min-height: 44px; }
+  a, button, input, select, textarea { -webkit-tap-highlight-color: rgba(132,45,38,0.15); }
+}
+
+/* Print tweaks */
+@media print {
+  body { background: #fff; color: #000; }
+  .head { background: none; color: #000; }
+  .sidebar { display: none; }
+  a { color: #000; text-decoration: underline; }
+}
