@@ -419,3 +419,133 @@ a[href="user.php?id=193864"]::after {
   .sidebar { display: none; }
   a { color: #000; text-decoration: underline; }
 }
+
+/* ===== Responsive overrides (подключать ПОСЛЕ всех текущих стилей) ===== */
+
+/* Базовые правки конфликтов */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+/* Снимаем лишние внешние отступы и задаём контейнер */
+body { margin: 0; }
+#wrapper, #content { max-width: 1200px; margin: 0 auto; padding: 0 12px; }
+
+/* Изображения не вылезают */
+img { max-width: 100%; height: auto; }
+
+/* Таблицы по умолчанию на всю ширину */
+table { width: 100%; }
+
+/* Torrent table: базовая читабельность + выравнивание */
+.torrent_table tr { vertical-align: top; }
+.torrent_table td { padding: 6px 8px; }
+.torrent_table div.tags { font-weight: normal; }
+
+/* Форум: не даём аватаркам ломать колонку */
+.forum_post .avatar { width: 150px; }
+.forum_post .avatar img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+}
+
+/* Фикс логотипа: не вылазит и скейлится */
+#logo { width: auto; height: auto; padding: 16px 8px; }
+#logo > a {
+  display: block;
+  min-height: 39px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Кнопки/inputs — нормальные отступы и шрифт */
+button, input, select, textarea { font-size: 14px; }
+
+/* Обёртка для широких таблиц: горизонтальный скролл на мобильных */
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-responsive > table { min-width: 640px; }
+
+/* Если .table-responsive не используется — подстрахуем общие таблицы на мобилке */
+@media (max-width: 768px) {
+  .box table, .box2 table, .torrent_table, table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== Layout на брейкпоинтах ===== */
+
+/* Планшеты: сайдбар под контент, компактнее отступы */
+@media (max-width: 992px) {
+  #wrapper, #content { padding: 0 10px; }
+  .main_column, .sidebar {
+    float: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .sidebar { margin-top: 12px; float: none !important; }
+  .forum_post .avatar { width: 120px; }
+  .forum_post .avatar img { max-height: 300px; }
+}
+
+/* Телефоны: убираем nowrap, делаем элементы кликабельнее, растягиваем кнопки */
+@media (max-width: 768px) {
+  /* Нельзя держать глобальный nowrap — ломает строки на телефонах */
+  .nobr { white-space: normal !important; }
+
+  /* Формы: лейблы и поля в столбик */
+  form table td.label {
+    width: auto !important;
+    text-align: left !important;
+    display: block;
+    margin-top: 8px;
+  }
+  form table td:not(.label) {
+    display: block;
+    width: 100% !important;
+  }
+
+  /* Кнопки на всю ширину — удобно пальцем */
+  button, input[type=button], input[type=submit] { width: 100%; }
+
+  /* Список/сайдбар/мелкие отступы */
+  ol, ul { margin: 10px; padding-left: 16px; }
+}
+
+/* Маленькие телефоны */
+@media (max-width: 600px) {
+  html, body { overflow-x: hidden; }
+  #wrapper, #content { padding: 0 8px; }
+
+  /* Ещё уменьшаем аватар */
+  .forum_post .avatar { width: 90px; }
+  .forum_post .avatar img { max-height: 220px; }
+
+  /* Инпуты — побольше паддинги под тач */
+  input, select, textarea { padding: 10px 12px; }
+
+  /* Глобальные иконки/скроллбар убираем, чтобы не мигал */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+}
+
+/* Косячные nowrap в меню и прочих местах — разрешаем перенос на очень узких */
+@media (max-width: 480px) {
+  #menu > ul a { white-space: normal !important; }
+}
+
+/* Тач-улучшения */
+@media (pointer: coarse) {
+  button, input[type=button], input[type=submit] { min-height: 44px; }
+  a, button, input, select, textarea { -webkit-tap-highlight-color: rgba(132,45,38,0.15); }
+}
+
+/* Печать */
+@media print {
+  body { background: #fff; color: #000; }
+  .sidebar { display: none; }
+  a { color: #000; text-decoration: underline; }
+}
